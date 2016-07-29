@@ -1,34 +1,28 @@
 package main
 
 import (
-	"fmt"
-	"image"
-	"image/color"
-	"image/jpeg"
-	"log"
-	"os"
+	"path/filepath"
 
 	"github.com/mgiraud/raytracer"
+	"github.com/mgiraud/raytracer/matrix"
 )
 
+const IMG_WIDTH = 1920.0
+const IMG_HEIGHT = 1080.0
+
 func main() {
-	camera := &raytracer.Camera{}
-	camera.SetPerspective(90, 0.01, 100, 16/9)
-	camera.SetProjectionMatrix()
-	fmt.Println(camera.ProjMat)
-	img := image.NewRGBA(image.Rect(0, 0, 10, 10))
+	path, _ := filepath.Abs("../src/github.com/mgiraud/raytracer/scenes/scene0.json")
+	camera, objects := raytracer.ReadScene(path)
+	camera.InitCamera(IMG_WIDTH, IMG_HEIGHT, 100)
+	camera.MoveCamera(matrix.Vector4{0, 0, 0, 1})
+	scene := &raytracer.Scene{Cam: camera}
+	scene.Objects = map[string]raytracer.Object{}
+	scene.Objects = objects
 
-	for y := img.Rect.Min.Y; y < img.Rect.Max.Y; y++ {
-		for x := img.Rect.Min.X; x < img.Rect.Max.X; x++ {
-			img.Set(x, y, color.RGBA{0x88, 0xff, 0x88, 0xff})
-		}
-	}
+	sphereStruct := scene.Objects["sphere-1"]
+	sphere := sphereStruct.(*raytracer.Sphere)
+	sphere.ComputeMatrix()
 
-	file, err := os.Create("simple.jpg")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
-
-	jpeg.Encode(file, img, &jpeg.Options{80})
+	scene.Render(IMG_WIDTH, IMG_HEIGHT)
+	scene.CreateImage()
 }

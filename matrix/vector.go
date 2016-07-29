@@ -1,6 +1,9 @@
 package matrix
 
-import "math"
+import (
+	"fmt"
+	"math"
+)
 
 type Vector4 []float64
 type Vector3 []float64
@@ -11,6 +14,11 @@ func NewVec4() Vector4 {
 
 func NewVec3() Vector3 {
 	return Vector3{0, 0, 0}
+}
+
+func (vec Vector4) String() string {
+	return fmt.Sprintf("%f %f %f %f",
+		vec[0], vec[1], vec[2], vec[3])
 }
 
 func (dest Vector4) Mat16MulVec4(mat Matrix16, vec Vector4) {
@@ -76,11 +84,11 @@ func (dest Vector4) Length() float64 {
 	return math.Sqrt(x*x + y*y + z*z + w*w)
 }
 
-func (dest Vector4) Normalize(vec Vector4) {
-	x := vec[0]
-	y := vec[1]
-	z := vec[2]
-	w := vec[3]
+func (dest Vector4) Normalize() {
+	x := dest[0]
+	y := dest[1]
+	z := dest[2]
+	w := dest[3]
 	len := x*x + y*y + z*z + w*w
 	if len > 0 {
 		len = 1 / math.Sqrt(len)

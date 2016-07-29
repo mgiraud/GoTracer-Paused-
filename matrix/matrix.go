@@ -1,7 +1,9 @@
 package matrix
 
-import "fmt"
-import "math"
+import (
+	"fmt"
+	"math"
+)
 
 type Matrix interface {
 	Mul() Matrix16
@@ -11,6 +13,12 @@ type Matrix16 []float64
 
 func NewMat16() Matrix16 {
 	return Matrix16{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+}
+
+func (mat Matrix16) Clone() Matrix16 {
+	clone := NewMat16()
+	copy(clone, mat)
+	return clone
 }
 
 func (mat Matrix16) String() string {
