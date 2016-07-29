@@ -5,6 +5,7 @@ List of Features
 - GoRoutine (go thread) for pixel blocks
 - Phong, reflection and refraction
 - Simple shapes (triangle, sphere, box, cylinder, cone)
+- Simple implementation of Ray Marching
 
 And others maybe
 - Real-Time display 

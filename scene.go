@@ -80,18 +80,20 @@ func (sce *Scene) Render(width, height float64) {
 	sce.img = image.NewRGBA(image.Rect(0, 0, int(width), int(height)))
 	sce.width = width
 	sce.height = height
+	var wg sync.WaitGroup
+	wg.Add(sce.img.Rect.Max.Y * sce.img.Rect.Max.X / 64)
 
 	for y := sce.img.Rect.Min.Y; y < sce.img.Rect.Max.Y; y += 8 {
 		for x := sce.img.Rect.Min.X; x < sce.img.Rect.Max.X; x += 8 {
 			a := x
 			b := y
-			// fmt.Println("OUT", a, b)
-			func() {
-				// fmt.Println("INT", a, b)
+			go func() {
+				defer wg.Done()
 				sce.RenderBlock(a, b)
 			}()
 		}
 	}
+	wg.Wait()
 }
 
 func (sce *Scene) CreateImage() {
