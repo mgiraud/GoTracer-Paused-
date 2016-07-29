@@ -9,6 +9,7 @@ import (
 type Object interface {
 	Intersect(ray *Ray) (bool, float64)
 	ComputeMatrix()
+	GetColor() color.RGBA
 }
 
 type Sphere struct {
@@ -18,6 +19,10 @@ type Sphere struct {
 	Color         color.RGBA     `json:"color"`
 	ObjectToWorld matrix.Matrix16
 	WorldToObject matrix.Matrix16
+}
+
+func (sph *Sphere) GetColor() color.RGBA {
+	return sph.Color
 }
 
 func (sph *Sphere) ComputeMatrix() {
