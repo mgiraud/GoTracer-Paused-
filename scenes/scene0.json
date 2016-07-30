@@ -2,30 +2,40 @@
     "camera": {
        "fov": 80,
        "position": [0.0, 0.0, 0.0, 1.0],
-       "rotation": [0.0, 0.0, 0.0] 
+       "rotation": [0.0, 0.0, 0.0],
+       "width": 1920.0,
+       "height": 1080.0,
+       "color": [0,0,0,255],
+       "bias": 0.01,
+       "maxDepth": 5
     },
     "shapes":{
         "sphere-1" : {
-            "radius": 8.0, 
-            "position": [-10.0, 0.0, 20.0, 1.0],
+            "radius": 2.0, 
+            "position": [-1.0, 0.0, 5.0, 1.0],
             "rotation": [0.0, 0.0, 0.0],
-            "color": {
-                "R": 255,
-                "G": 0,
-                "B": 0,
-                "A": 255
-            }
+            "color": [255,0,0,0],
+            "albedo": 0.18,
+            "Ks": 0.2,
+            "Kd": 0.8,
+            "n": 100
         },
         "sphere-2" : {
-            "radius": 8.0, 
-            "position": [10.0, 0.0, 20.0, 1.0],
+            "radius": 2.0, 
+            "position": [1.0, 0.0, 5.0, 1.0],
             "rotation": [0.0, 0.0, 0.0],
-            "color": {
-                "R": 0,
-                "G": 255,
-                "B": 0,
-                "A": 255
-            }
+            "color": [0,255,0,0],
+            "albedo": 0.18,
+            "Ks": 0.2,
+            "Kd": 0.8,
+            "n": 100
+        }
+    },
+    "lights": {
+        "dist-1": {
+            "rotation": [0.0, 0.0, 0.0],
+            "color": [255,255,255,255],
+            "intensity": 1
         }
     }
 }

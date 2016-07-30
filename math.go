@@ -5,7 +5,6 @@ import "math"
 func solveQuadratic(a, b, c float64) (bool, float64) {
 	var q, x0, x1, discr float64
 	discr = b*b - 4*a*c
-	// println(discr)
 	if discr < 0 {
 		return false, 0
 	} else if discr == 0 {
@@ -21,10 +20,7 @@ func solveQuadratic(a, b, c float64) (bool, float64) {
 		x1 = c / q
 	}
 	if x0 > x1 {
-		tmp := x0
 		x0 = x1
-		x1 = tmp
 	}
-
 	return true, x0
 }

@@ -4,35 +4,33 @@ import "math"
 import "github.com/mgiraud/raytracer/matrix"
 
 type Camera struct {
-	Fov        float64        `json:"fov"`
-	Position   matrix.Vector4 `json:"position"`
-	Rotation   matrix.Vector3 `json:"rotation"`
-	ratio      float64
-	bottom     float64
-	top        float64
-	right      float64
-	left       float64
-	near       float64
-	far        float64
-	scale      float64
-	ProjMat    matrix.Matrix16
-	CamToWorld matrix.Matrix16
-	WorldToCam matrix.Matrix16
-	RayOrigin  matrix.Vector4
+	Fov            float64        `json:"fov"`
+	Position       matrix.Vector4 `json:"position"`
+	Rotation       matrix.Vector3 `json:"rotation"`
+	Width          float64        `json:"width"`
+	Height         float64        `json:"height"`
+	Bias           float64        `json:"bias"`
+	MaxDepth       int            `json:"maxDepth"`
+	BacgroundColor matrix.Vector4 `json:"color"`
+	// far, bottom, top, right, left, near float64
+	ratio, scale                    float64
+	ProjMat, CamToWorld, WorldToCam matrix.Matrix16
+	RayOrigin                       matrix.Vector4
 }
 
-func (cam *Camera) InitCamera(width, height int, fov float64) {
+func (cam *Camera) InitCamera() {
 	mat := matrix.NewMat16()
 	mat.Mat16Identity()
 	invmat := mat.Clone()
 	invmat.Inverse(invmat)
 	origin := matrix.Vector4{0, 0, 0, 1}
 	origin.Mat16MulVec4(mat, origin)
-	cam.ratio = (float64(width) / float64(height))
-	cam.scale = math.Tan(fov * 0.5 * math.Pi / 180)
+	cam.ratio = (cam.Width / cam.Height)
+	cam.scale = math.Tan(cam.Fov * 0.5 * math.Pi / 180)
 	cam.CamToWorld = mat
 	cam.WorldToCam = invmat
 	cam.RayOrigin = origin
+	cam.MoveCamera(cam.Position)
 }
 
 func (cam *Camera) MoveCamera(point matrix.Vector4) {
@@ -57,6 +55,7 @@ func (cam *Camera) LookAt(eye matrix.Vector3, center matrix.Vector3, up matrix.V
 	cam.WorldToCam.Inverse(cam.CamToWorld)
 }
 
+/*  Not used for rayTracer -> this is just an example of projection matrix used by OpenGl for example
 func (cam *Camera) SetPerspective(fov, near, far, ratio float64) {
 	scale := math.Tan(fov*0.5*math.Pi/180) * near
 	cam.Fov = fov
@@ -91,3 +90,4 @@ func (cam *Camera) SetProjectionMatrix() {
 	cam.ProjMat[14] = -2 * cam.far * cam.near / (cam.far - cam.near)
 	cam.ProjMat[15] = 0
 }
+*/

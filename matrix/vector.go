@@ -33,11 +33,14 @@ func (dest Vector4) Mat16MulVec4(mat Matrix16, vec Vector4) {
 	dest[3] = mat[3]*x + mat[7]*y + mat[11]*z + mat[15]*w
 }
 
-func (dest Vector4) Add(vec Vector4) {
-	dest[0] += vec[0]
-	dest[1] += vec[1]
-	dest[2] += vec[2]
-	dest[3] += vec[3]
+func (dest Vector4) Add(vec Vector4) Vector4 {
+	ret := Vector4{
+		dest[0] + vec[0],
+		dest[1] + vec[1],
+		dest[2] + vec[2],
+		dest[3] + vec[3],
+	}
+	return ret
 }
 
 func (dest Vector4) Sub(vec Vector4) {
@@ -47,7 +50,7 @@ func (dest Vector4) Sub(vec Vector4) {
 	dest[3] -= vec[3]
 }
 
-func (dest Vector4) Mum(vec Vector4) {
+func (dest Vector4) Mul(vec Vector4) {
 	dest[0] *= vec[0]
 	dest[1] *= vec[1]
 	dest[2] *= vec[2]
@@ -101,4 +104,18 @@ func (dest Vector4) Normalize() {
 
 func (a Vector4) Dot(b Vector4) float64 {
 	return a[0]*b[0] + a[1]*b[1] + a[2]*b[2] + a[3]*b[3]
+}
+
+func (a Vector4) Neg() Vector4 {
+	return Vector4{-a[0], -a[1], -a[2], -a[3]}
+}
+
+func (dest Vector4) MulFloat(num float64) Vector4 {
+	ret := Vector4{
+		dest[0] * num,
+		dest[1] * num,
+		dest[2] * num,
+		dest[3] * num,
+	}
+	return ret
 }
