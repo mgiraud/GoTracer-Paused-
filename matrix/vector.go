@@ -43,11 +43,14 @@ func (dest Vector4) Add(vec Vector4) Vector4 {
 	return ret
 }
 
-func (dest Vector4) Sub(vec Vector4) {
-	dest[0] -= vec[0]
-	dest[1] -= vec[1]
-	dest[2] -= vec[2]
-	dest[3] -= vec[3]
+func (dest Vector4) Sub(vec Vector4) Vector4 {
+	ret := Vector4{
+		dest[0] - vec[0],
+		dest[1] - vec[1],
+		dest[2] - vec[2],
+		dest[3] - vec[3],
+	}
+	return ret
 }
 
 func (dest Vector4) Mul(vec Vector4) {

@@ -31,6 +31,17 @@ func (cam *Camera) InitCamera() {
 	cam.WorldToCam = invmat
 	cam.RayOrigin = origin
 	cam.MoveCamera(cam.Position)
+	// if cam.Rotation != nil {
+	// 	if cam.Rotation[0] != 0 {
+	// 		cam.RotateCamera(matrix.Vector3{1, 0, 0}, cam.Rotation[0])
+	// 	}
+	// 	if cam.Rotation[1] != 0 {
+	// 		cam.RotateCamera(matrix.Vector3{0, 1, 0}, cam.Rotation[1])
+	// 	}
+	// 	if cam.Rotation[2] != 0 {
+	// 		cam.RotateCamera(matrix.Vector3{0, 0, 1}, cam.Rotation[2])
+	// 	}
+	// }
 }
 
 func (cam *Camera) MoveCamera(point matrix.Vector4) {

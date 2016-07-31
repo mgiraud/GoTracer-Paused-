@@ -23,8 +23,13 @@ type Scene struct {
 func (sce *Scene) IsIlluminatedByDirlight(light *DistantLight, i matrix.Vector4, n matrix.Vector4) bool {
 	invDir := light.Dir.Neg()
 	ray := NewRay(i.Add(n.MulFloat(sce.Cam.Bias)), invDir, "SHADOW_DIRECT_LIGHT")
-	_, _, hasShadow := sce.GetIntersection(ray)
-	return hasShadow == nil
+	for _, v := range sce.Objects {
+		res, _, _ := v.Intersect(ray)
+		if res == true {
+			return false
+		}
+	}
+	return true
 }
 
 func (sce *Scene) ComputeDirectLight(o Object, i matrix.Vector4, n matrix.Vector4) matrix.Vector4 {

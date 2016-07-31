@@ -2,11 +2,11 @@ package raytracer
 
 import "math"
 
-func solveQuadratic(a, b, c float64) (bool, float64) {
+func solveQuadratic(a, b, c float64) (bool, float64, float64) {
 	var q, x0, x1, discr float64
 	discr = b*b - 4*a*c
 	if discr < 0 {
-		return false, 0
+		return false, 0, 0
 	} else if discr == 0 {
 		x0 = -0.5 * b / a
 		x1 = x0
@@ -20,7 +20,9 @@ func solveQuadratic(a, b, c float64) (bool, float64) {
 		x1 = c / q
 	}
 	if x0 > x1 {
+		tmp := x0
 		x0 = x1
+		x1 = tmp
 	}
-	return true, x0
+	return true, x0, x1
 }

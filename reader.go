@@ -34,6 +34,15 @@ func (sm *ObjectMap) UnmarshalJSON(data []byte) error {
 				return err
 			}
 			result[k] = s
+			break
+		case strings.Contains(k, "plan"):
+			s := &Plane{}
+			err := json.Unmarshal(v, &s)
+			if err != nil {
+				return err
+			}
+			result[k] = s
+			break
 		default:
 			return errors.New("Unrecognized shape")
 		}
