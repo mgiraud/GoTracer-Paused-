@@ -13,7 +13,8 @@ type Plane struct {
 	Albedo        float64        `json:"albedo"`
 	Kd            float64        `json:"Kd"`
 	Ks            float64        `json:"Ks"`
-	N             float64        `json:"n"`
+	Ior           float64        `json:"ior"`
+	Phong         float64        `json:"phong"`
 	ObjectToWorld matrix.Matrix16
 	WorldToObject matrix.Matrix16
 }
@@ -26,8 +27,12 @@ func (plane *Plane) GetKd() float64 {
 	return plane.Kd
 }
 
-func (plane *Plane) GetN() float64 {
-	return plane.N
+func (plane *Plane) GetIor() float64 {
+	return plane.Ior
+}
+
+func (plane *Plane) GetPhong() float64 {
+	return plane.Phong
 }
 
 func (plane *Plane) GetColor() matrix.Vector4 {

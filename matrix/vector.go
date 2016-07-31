@@ -136,3 +136,21 @@ func (dest Vector4) DivFloat(num float64) Vector4 {
 func (vec Vector4) Norm() float64 {
 	return vec[0]*vec[0] + vec[1]*vec[1] + vec[2]*vec[2]
 }
+
+func (vec Vector4) Clone() Vector4 {
+	return Vector4{
+		vec[0],
+		vec[1],
+		vec[2],
+		vec[3],
+	}
+}
+
+func (vec Vector4) Min(num float64) Vector4 {
+	return Vector4{
+		math.Min(num, vec[0]),
+		math.Min(num, vec[1]),
+		math.Min(num, vec[2]),
+		math.Min(num, vec[3]),
+	}
+}

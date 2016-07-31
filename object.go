@@ -12,5 +12,6 @@ type Object interface {
 	GetAlbedo() float64
 	GetKs() float64
 	GetKd() float64
-	GetN() float64
+	GetIor() float64
+	GetPhong() float64
 }

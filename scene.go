@@ -24,7 +24,7 @@ type Scene struct {
 
 func (sce *Scene) IsIlluminated(d, i, n matrix.Vector4) bool {
 	invDir := d.Neg()
-	ray := NewRay(i.Add(n.MulFloat(sce.Cam.Bias)), invDir, "SHADOW_DIRECT_LIGHT")
+	ray := NewRay(i.Add(n.MulFloat(sce.Cam.Bias)), invDir, "SHADOW_DIRECT_LIGHT", 0)
 	for _, v := range sce.Objects {
 		res, _, _ := v.Intersect(ray)
 		if res == true {
@@ -47,14 +47,14 @@ func (sce *Scene) ComputeDirectLight(o Object, i matrix.Vector4, n matrix.Vector
 			if vis {
 				diffuseFactor = o.GetAlbedo() / math.Pi * math.Max(0.0, n.Dot(invdir)) * d.Intensity
 				R := Reflect(d.Dir, n)
-				specularFactor = d.Intensity * math.Pow(math.Max(0.0, R.Dot(invdir)), o.GetN())
+				specularFactor = d.Intensity * math.Pow(math.Max(0.0, R.Dot(invdir)), o.GetPhong())
 			} else {
 				diffuseFactor = 0.0
 				specularFactor = 0.0
 			}
-			diffuse[0] += d.Color[0] * diffuseFactor
-			diffuse[1] += d.Color[1] * diffuseFactor
-			diffuse[2] += d.Color[2] * diffuseFactor
+			diffuse[0] += d.Color[0] * o.GetColor()[0] * diffuseFactor
+			diffuse[1] += d.Color[1] * o.GetColor()[1] * diffuseFactor
+			diffuse[2] += d.Color[2] * o.GetColor()[2] * diffuseFactor
 
 			specular[0] += d.Color[0] * specularFactor
 			specular[1] += d.Color[1] * specularFactor
@@ -95,6 +95,38 @@ func (sce *Scene) ComputePointLight(o Object, i matrix.Vector4, n matrix.Vector4
 	return color
 }
 
+func (sce *Scene) ComputeReflectionRefraction(o Object, i matrix.Vector4, n matrix.Vector4, ray *Ray) matrix.Vector4 {
+	var refractionDirection, refractionOrig, reflectionDirection, reflectionOrig matrix.Vector4
+	var reflectionColor, refractionColor, color matrix.Vector4
+	var kr float64 = Fresnel(ray.Dir, n, o.GetIor())
+	var outside bool = ray.Dir.Dot(n) < 0
+	var bias matrix.Vector4 = n.MulFloat(sce.Cam.Bias)
+	if kr < 1 {
+		refractionDirection = Refract(ray.Dir, n, o.GetIor())
+		refractionDirection.Normalize()
+		if outside {
+			refractionOrig = i.Sub(bias)
+		} else {
+			refractionOrig = i.Add(bias)
+		}
+		refraRay := NewRay(refractionOrig, refractionDirection, "REFRACTION", ray.Depth+1)
+		_, refractionColor = sce.CastRay(refraRay)
+	}
+
+	reflectionDirection = Reflect(ray.Dir, n)
+	reflectionDirection.Normalize()
+	if outside {
+		reflectionOrig = i.Add(bias)
+	} else {
+		refractionOrig = i.Sub(bias)
+	}
+	reflectRay := NewRay(reflectionOrig, reflectionDirection, "REFLECTION", ray.Depth+1)
+	_, reflectionColor = sce.CastRay(reflectRay)
+
+	color = reflectionColor.MulFloat(kr).Add(refractionColor.MulFloat((1 - kr)))
+	return color
+}
+
 func (sce *Scene) GetIntersection(ray *Ray) (float64, Object, matrix.Vector4) {
 	d := math.MaxFloat64
 	var o Object = nil
@@ -113,17 +145,23 @@ func (sce *Scene) GetIntersection(ray *Ray) (float64, Object, matrix.Vector4) {
 }
 
 func (sce *Scene) CastRay(ray *Ray) (bool, matrix.Vector4) {
-	var col matrix.Vector4 = matrix.Vector4{0, 0, 0, 255}
+	var dCol, rCol matrix.Vector4 = matrix.Vector4{0, 0, 0, 255}, matrix.Vector4{0, 0, 0, 255}
 	var hasIntersec bool = false
+
+	if ray.Depth > sce.Cam.MaxDepth {
+		return false, matrix.Vector4{0, 0, 0, 255}
+	}
 
 	d, o, i := sce.GetIntersection(ray)
 	if d != math.MaxInt64 && o != nil {
 		n := o.Normale(i, ray)
-		col = sce.ComputeDirectLight(o, i, n)
-		col = col.Add(sce.ComputePointLight(o, i, n))
+		dCol = sce.ComputeDirectLight(o, i, n)
+		dCol = dCol.Add(sce.ComputePointLight(o, i, n))
+		// dCol = dCol.Min(255).MulFloat(o.GetRhoD())
+		rCol = sce.ComputeReflectionRefraction(o, i, n, ray)
 		hasIntersec = true
 	}
-	return hasIntersec, col
+	return hasIntersec, dCol.MulFloat(1.0).Add(rCol.MulFloat(1.0))
 }
 
 func Vec4ToRGBA(col matrix.Vector4) color.RGBA {
@@ -144,7 +182,7 @@ func (sce *Scene) InitRay(i, j int) {
 	dir.Normalize()
 	ori := matrix.Vector4{0, 0, 0, 1}
 	ori.Mat16MulVec4(cam.CamToWorld, ori)
-	ray := NewRay(ori, dir, "PRIMARY")
+	ray := NewRay(ori, dir, "PRIMARY", 0)
 	_, col := sce.CastRay(ray)
 	sce.mux.Lock()
 	sce.img.Set(i, j, Vec4ToRGBA(col))

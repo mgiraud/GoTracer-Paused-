@@ -10,7 +10,9 @@ type Sphere struct {
 	Albedo        float64        `json:"albedo"`
 	Kd            float64        `json:"Kd"`
 	Ks            float64        `json:"Ks"`
-	N             float64        `json:"n"`
+	Ior           float64        `json:"ior"`
+	Phong         float64        `json:"phong"`
+	Transparency  float64        `json:"transparency"`
 	ObjectToWorld matrix.Matrix16
 	WorldToObject matrix.Matrix16
 }
@@ -23,8 +25,12 @@ func (sph *Sphere) GetKd() float64 {
 	return sph.Kd
 }
 
-func (sph *Sphere) GetN() float64 {
-	return sph.N
+func (sph *Sphere) GetPhong() float64 {
+	return sph.Phong
+}
+
+func (sph *Sphere) GetIor() float64 {
+	return sph.Ior
 }
 
 func (sph *Sphere) GetColor() matrix.Vector4 {
