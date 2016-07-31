@@ -12,6 +12,8 @@ import (
 	"github.com/mgiraud/raytracer/matrix"
 )
 
+const BSPT = 12
+
 type Scene struct {
 	Cam     *Camera
 	img     *image.RGBA
@@ -20,8 +22,8 @@ type Scene struct {
 	mux     sync.Mutex
 }
 
-func (sce *Scene) IsIlluminatedByDirlight(light *DistantLight, i matrix.Vector4, n matrix.Vector4) bool {
-	invDir := light.Dir.Neg()
+func (sce *Scene) IsIlluminated(d, i, n matrix.Vector4) bool {
+	invDir := d.Neg()
 	ray := NewRay(i.Add(n.MulFloat(sce.Cam.Bias)), invDir, "SHADOW_DIRECT_LIGHT")
 	for _, v := range sce.Objects {
 		res, _, _ := v.Intersect(ray)
@@ -41,7 +43,7 @@ func (sce *Scene) ComputeDirectLight(o Object, i matrix.Vector4, n matrix.Vector
 		d, ok := l.(*DistantLight)
 		if ok {
 			invdir := d.Dir.Neg()
-			vis := sce.IsIlluminatedByDirlight(d, i, n)
+			vis := sce.IsIlluminated(d.Dir, i, n)
 			if vis {
 				diffuseFactor = o.GetAlbedo() / math.Pi * math.Max(0.0, n.Dot(invdir)) * d.Intensity
 				R := Reflect(d.Dir, n)
@@ -50,9 +52,9 @@ func (sce *Scene) ComputeDirectLight(o Object, i matrix.Vector4, n matrix.Vector
 				diffuseFactor = 0.0
 				specularFactor = 0.0
 			}
-			diffuse[0] += d.Color[0] * o.GetColor()[0] * diffuseFactor
-			diffuse[1] += d.Color[1] * o.GetColor()[1] * diffuseFactor
-			diffuse[2] += d.Color[2] * o.GetColor()[2] * diffuseFactor
+			diffuse[0] += d.Color[0] * diffuseFactor
+			diffuse[1] += d.Color[1] * diffuseFactor
+			diffuse[2] += d.Color[2] * diffuseFactor
 
 			specular[0] += d.Color[0] * specularFactor
 			specular[1] += d.Color[1] * specularFactor
@@ -65,6 +67,32 @@ func (sce *Scene) ComputeDirectLight(o Object, i matrix.Vector4, n matrix.Vector
 		diffuse[2]*o.GetKd() + specular[2]*o.GetKs(),
 		255,
 	}
+}
+
+func (sce *Scene) ComputePointLight(o Object, i matrix.Vector4, n matrix.Vector4) matrix.Vector4 {
+	var lightDir, lightIntensity matrix.Vector4
+	var color matrix.Vector4 = matrix.Vector4{0, 0, 0, 255}
+	var r2, factor float64
+	for _, l := range sce.Lights {
+		d, ok := l.(*PointLight)
+		if ok {
+			lightDir = i.Sub(d.Position)
+			lightDir[3] = 0
+			r2 = lightDir.Norm()
+			lightDir.Normalize()
+			lightIntensity = d.Color.MulFloat(d.Intensity / (4 * math.Pi * r2))
+			invdir := lightDir.Neg()
+			if sce.IsIlluminated(lightDir, i, n) {
+				factor = math.Max(0.0, n.Dot(invdir))
+			} else {
+				factor = 0.0
+			}
+			color[0] += factor * lightIntensity[0]
+			color[1] += factor * lightIntensity[1]
+			color[2] += factor * lightIntensity[2]
+		}
+	}
+	return color
 }
 
 func (sce *Scene) GetIntersection(ray *Ray) (float64, Object, matrix.Vector4) {
@@ -92,6 +120,7 @@ func (sce *Scene) CastRay(ray *Ray) (bool, matrix.Vector4) {
 	if d != math.MaxInt64 && o != nil {
 		n := o.Normale(i, ray)
 		col = sce.ComputeDirectLight(o, i, n)
+		col = col.Add(sce.ComputePointLight(o, i, n))
 		hasIntersec = true
 	}
 	return hasIntersec, col
@@ -124,8 +153,8 @@ func (sce *Scene) InitRay(i, j int) {
 
 func (sce *Scene) RenderBlock(x int, y int) {
 
-	for z := y; z <= y+8; z++ {
-		for w := x; w <= x+8; w++ {
+	for z := y; z <= y+BSPT; z++ {
+		for w := x; w <= x+BSPT; w++ {
 			sce.InitRay(w, z)
 		}
 	}
@@ -135,10 +164,10 @@ func (sce *Scene) RenderBlock(x int, y int) {
 func (sce *Scene) Render() {
 	sce.img = image.NewRGBA(image.Rect(0, 0, int(sce.Cam.Width), int(sce.Cam.Height)))
 	var wg sync.WaitGroup
-	wg.Add(sce.img.Rect.Max.Y * sce.img.Rect.Max.X / 64)
+	wg.Add(sce.img.Rect.Max.Y * sce.img.Rect.Max.X / (BSPT * BSPT))
 
-	for y := sce.img.Rect.Min.Y; y < sce.img.Rect.Max.Y; y += 8 {
-		for x := sce.img.Rect.Min.X; x < sce.img.Rect.Max.X; x += 8 {
+	for y := sce.img.Rect.Min.Y; y < sce.img.Rect.Max.Y; y += BSPT {
+		for x := sce.img.Rect.Min.X; x < sce.img.Rect.Max.X; x += BSPT {
 			a, b := x, y
 			go func() {
 				defer wg.Done()

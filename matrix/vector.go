@@ -122,3 +122,17 @@ func (dest Vector4) MulFloat(num float64) Vector4 {
 	}
 	return ret
 }
+
+func (dest Vector4) DivFloat(num float64) Vector4 {
+	ret := Vector4{
+		dest[0] / num,
+		dest[1] / num,
+		dest[2] / num,
+		dest[3] / num,
+	}
+	return ret
+}
+
+func (vec Vector4) Norm() float64 {
+	return vec[0]*vec[0] + vec[1]*vec[1] + vec[2]*vec[2]
+}
